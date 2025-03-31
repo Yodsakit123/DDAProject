@@ -1,4 +1,4 @@
-data_dir: /root/data/Office31
+data_dir: C:/Users/First/Desktop/ProjectTest/ProjectTest/Office-31
 src_domain: amazon
 tgt_domain: webcam
 backbone: resnet50
