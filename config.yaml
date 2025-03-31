@@ -1,0 +1,13 @@
+data_dir: /path/to/Office-31
+src_domain: amazon
+tgt_domain: webcam
+backbone: resnet50
+use_bottleneck: true
+transfer_loss: mmd
+n_epoch: 50
+batch_size: 16
+lr: 0.001
+lr_scheduler: true
+early_stop: 5
+epoch_based_training: true
+

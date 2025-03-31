@@ -80,9 +80,12 @@ class TransferNet(nn.Module):
             )
         return params
 
-    def predict(self, x):
+    def predict(self, x): #change predict so it work whether use_bottleneck is True or False
         features = self.base_network(x)
-        x = self.bottleneck_layer(features)
+        if self.use_bottleneck:
+            x = self.bottleneck_layer(features)
+        else:
+            x = features
         clf = self.classifier_layer(x)
         return clf
 
