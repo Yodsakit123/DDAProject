@@ -50,9 +50,11 @@ class MMDLoss(nn.Module):
         loss = XX + YY - XY - YX
 
         #debug NaN protection
-        if torch.isnan(loss):
-            print("MMDLoss produced NaN — setting to 0")
-            loss = torch.tensor(0.0, device=source.device)
+        if torch.isnan(loss) or torch.isinf(loss):
+            print("MMDLoss is NaN or Inf — resetting to 0")
+            return torch.tensor(0.0, device=source.device)
+        
+        print(f"MMD values — XX: {XX:.4f}, YY: {YY:.4f}, XY: {XY:.4f}, YX: {YX:.4f}")
 
         return loss
 
