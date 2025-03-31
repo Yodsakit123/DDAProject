@@ -1,4 +1,4 @@
-data_dir: /path/to/Office-31
+data_dir: /root/data/Office31
 src_domain: amazon
 tgt_domain: webcam
 backbone: resnet50
@@ -10,4 +10,3 @@ lr: 0.001
 lr_scheduler: true
 early_stop: 5
 epoch_based_training: true
-
