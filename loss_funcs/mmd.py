@@ -35,15 +35,24 @@ class MMDLoss(nn.Module):
         return loss
 
     def forward(self, source, target):
-        if self.kernel_type == 'linear':
-            return self.linear_mmd2(source, target)
-        elif self.kernel_type == 'rbf':
-            batch_size = int(source.size()[0])
-            kernels = self.guassian_kernel(
-                source, target, kernel_mul=self.kernel_mul, kernel_num=self.kernel_num, fix_sigma=self.fix_sigma)
-            XX = torch.mean(kernels[:batch_size, :batch_size])
-            YY = torch.mean(kernels[batch_size:, batch_size:])
-            XY = torch.mean(kernels[:batch_size, batch_size:])
-            YX = torch.mean(kernels[batch_size:, :batch_size])
-            loss = torch.mean(XX + YY - XY - YX)
-            return loss
+     if self.kernel_type == 'linear':
+        return self.linear_mmd2(source, target)
+     elif self.kernel_type == 'rbf':
+        batch_size = int(source.size()[0])
+        kernels = self.guassian_kernel(
+            source, target, kernel_mul=self.kernel_mul, kernel_num=self.kernel_num, fix_sigma=self.fix_sigma)
+        
+        XX = torch.mean(kernels[:batch_size, :batch_size])
+        YY = torch.mean(kernels[batch_size:, batch_size:])
+        XY = torch.mean(kernels[:batch_size, batch_size:])
+        YX = torch.mean(kernels[batch_size:, :batch_size])
+
+        loss = XX + YY - XY - YX
+
+        #debug NaN protection
+        if torch.isnan(loss):
+            print("MMDLoss produced NaN — setting to 0")
+            loss = torch.tensor(0.0, device=source.device)
+
+        return loss
+
