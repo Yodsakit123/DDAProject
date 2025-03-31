@@ -3,7 +3,7 @@ src_domain: amazon
 tgt_domain: webcam
 backbone: resnet50
 use_bottleneck: true
-transfer_loss: mmd
+transfer_loss: coral
 n_epoch: 50
 batch_size: 32
 lr: 0.001
