@@ -35,26 +35,15 @@ class MMDLoss(nn.Module):
         return loss
 
     def forward(self, source, target):
-     if self.kernel_type == 'linear':
-        return self.linear_mmd2(source, target)
-     elif self.kernel_type == 'rbf':
-        batch_size = int(source.size()[0])
-        kernels = self.guassian_kernel(
-            source, target, kernel_mul=self.kernel_mul, kernel_num=self.kernel_num, fix_sigma=self.fix_sigma)
-        
-        XX = torch.mean(kernels[:batch_size, :batch_size])
-        YY = torch.mean(kernels[batch_size:, batch_size:])
-        XY = torch.mean(kernels[:batch_size, batch_size:])
-        YX = torch.mean(kernels[batch_size:, :batch_size])
-
-        loss = XX + YY - XY - YX
-
-        #debug NaN protection
-        if torch.isnan(loss) or torch.isinf(loss):
-            print("MMDLoss is NaN or Inf — resetting to 0")
-            return torch.tensor(0.0, device=source.device)
-        
-        print(f"MMD values — XX: {XX:.4f}, YY: {YY:.4f}, XY: {XY:.4f}, YX: {YX:.4f}")
-
-        return loss
-
+        if self.kernel_type == 'linear':
+            return self.linear_mmd2(source, target)
+        elif self.kernel_type == 'rbf':
+            batch_size = int(source.size()[0])
+            kernels = self.guassian_kernel(
+                source, target, kernel_mul=self.kernel_mul, kernel_num=self.kernel_num, fix_sigma=self.fix_sigma)
+            XX = torch.mean(kernels[:batch_size, :batch_size])
+            YY = torch.mean(kernels[batch_size:, batch_size:])
+            XY = torch.mean(kernels[:batch_size, batch_size:])
+            YX = torch.mean(kernels[batch_size:, :batch_size])
+            loss = torch.mean(XX + YY - XY - YX)
+            return loss

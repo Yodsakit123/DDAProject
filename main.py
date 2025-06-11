@@ -7,6 +7,8 @@ import utils
 from utils import str2bool
 import numpy as np
 import random
+import csv
+import pandas as pd
 
 def get_parser():
     """Get default arguments."""
@@ -95,15 +97,32 @@ def test(model, target_test_loader, args):
     correct = 0
     criterion = torch.nn.CrossEntropyLoss()
     len_target_dataset = len(target_test_loader.dataset)
+
+    all_preds = []
+    all_labels = []
+
     with torch.no_grad():
         for data, target in target_test_loader:
             data, target = data.to(args.device), target.to(args.device)
             s_output = model.predict(data)
             loss = criterion(s_output, target)
             test_loss.update(loss.item())
+
             pred = torch.max(s_output, 1)[1]
             correct += torch.sum(pred == target)
+
+            all_preds.extend(pred.cpu().tolist())
+            all_labels.extend(target.cpu().tolist())
+
     acc = 100. * correct / len_target_dataset
+
+    # Save predictions and labels to CSV for confusion matrix
+    df = pd.DataFrame({
+        'true_label': all_labels,
+        'predicted_label': all_preds
+    })
+    df.to_csv(f'{args.transfer_loss}_{args.src_domain}_{args.tgt_domain}_confusion.csv', index=False)
+
     return acc, test_loss.avg
 
 def train(source_loader, target_train_loader, target_test_loader, model, optimizer, lr_scheduler, args):
@@ -165,8 +184,28 @@ def train(source_loader, target_train_loader, target_test_loader, model, optimiz
         if args.early_stop > 0 and stop >= args.early_stop:
             print(info)
             break
+
+        log_path = f"{args.transfer_loss}_log.csv"
+        write_header = not os.path.exists(log_path)
+
+        with open(log_path, "a", newline='') as f_log:
+            writer = csv.writer(f_log)
+            if write_header:
+                writer.writerow(["epoch", "cls_loss", "transfer_loss", "total_loss", "test_loss", "test_acc"])
+            writer.writerow([
+                int(e),
+                round(train_loss_clf.avg, 4),
+                round(train_loss_transfer.avg, 4),
+                round(train_loss_total.avg, 4),
+                round(test_loss.item() if torch.is_tensor(test_loss) else test_loss, 4),
+                round(test_acc.item() if torch.is_tensor(test_acc) else test_acc, 4),
+            ])
+            
         print(info)
     print('Transfer result: {:.4f}'.format(best_acc))
+    torch.save(model.state_dict(), f"dsan_{args.src_domain}_to_{args.tgt_domain}.pth")
+    print(f"Model saved as dsan_{args.src_domain}_to_{args.tgt_domain}.pth")
+
 
 def main():
     parser = get_parser()

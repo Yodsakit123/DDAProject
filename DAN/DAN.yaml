@@ -15,7 +15,16 @@ momentum: 0.9
 
 # Training related
 n_iter_per_epoch: 500
-n_epoch: 20
+n_epoch: 50
+use_bottleneck: True
+epoch_based_training: True
+batch_size: 32
+early_stop: 5
+
+# Data
+data_dir: /content/24-25_CE301_kittichalermroj_yodsakit/Office-31
+src_domain: dslr
+tgt_domain: webcam
 
 # Others
 seed: 1
